@@ -73,8 +73,8 @@ LOCALE = (
 LOCALE_PATHS = (os.path.join(os.path.dirname(__file__), '../locale/'),)
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/var/www/example.com/media/" old : 
-#the value of media_root is temporaly 
+# Example: "/var/www/example.com/media/" old :
+#the value of media_root is temporaly
 # a solution like upload in CDN as amazon bucket should be implemented.
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'cache')
 
@@ -153,12 +153,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.media",
     "django.core.context_processors.static",
     "django.core.context_processors.tz",
-    "django.core.context_processors.request",
+#    "django.core.context_processors.request",
     "django.contrib.messages.context_processors.messages",
     "votainteligente.context_processors.get_url_base",
     "votainteligente.context_processors.word_i18n",
     )
-
 TESTING = 'test' in sys.argv
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -175,8 +174,8 @@ INSTALLED_APPS = (
     'haystack',
     'elections',
     'candideitorg',
-    'popit',
-    'writeit',
+    #'popit',
+    #'writeit',
     'markdown_deux',
     'django_extensions',
     'pagination',
@@ -197,7 +196,6 @@ INSTALLED_APPS = (
 )
 
 ### POPIT DJANGO THINGS THINGS
-
 # Testing related
 TEST_POPIT_API_HOST_IP   = '127.0.0.1'
 TEST_POPIT_API_PORT      = '3000'

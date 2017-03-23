@@ -1,25 +1,23 @@
 Django==1.5.1
-django-nose
-django-autoslug
-django-taggit
-loremipsum
-South
-pyelasticsearch
-django-haystack
+django-nose==1.2
+django-autoslug==1.7.2
+django-taggit==0.17.3
+South==0.8.4
+pyelasticsearch==0.6.1
+django-haystack==2.1.0
 -e git://github.com/ciudadanointeligente/candideitorg-django.git#egg=candideitorg-django
-PyYAML
+PyYAML==3.10
 django-markdown-deux==1.0.4
-django-extensions
-sorl-thumbnail
-pillow
-pgmagick
-django_admin_bootstrapped
-django-tinymce
+django-extensions==1.3.3
+sorl-thumbnail==11.12
+Pillow==2.3.1
+django-admin-bootstrapped==1.6.4
+django-tinymce==1.5.2
 -e git://github.com/ciudadanointeligente/popit-django.git@posts_a_person_to_the_api#egg=popit-django
 -e git://github.com/ciudadanointeligente/writeit-django.git#egg=writeit-django
-django-registration
-mimeparse
-django-tastypie
+django-registration==1.0
+mimeparse==0.1.3
+django-tastypie==0.11.0
 django-pagination==1.0.5
-django-celery
-python-memcached
+django-celery==3.1.10
+python-memcached==1.53
