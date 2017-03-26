@@ -1,23 +1,38 @@
-Django==1.5.1
-django-nose==1.2
-django-autoslug==1.7.2
-django-taggit==0.17.3
-South==0.8.4
-pyelasticsearch==0.6.1
-django-haystack==2.1.0
--e git://github.com/ciudadanointeligente/candideitorg-django.git#egg=candideitorg-django
-PyYAML==3.10
+Django==1.8.1
+django-autoslug==1.8.0
+-e git://github.com/lfalvarez/django-candidator.git#egg=django-candidator
+django-haystack==2.4.0
 django-markdown-deux==1.0.4
-django-extensions==1.3.3
-sorl-thumbnail==11.12
-Pillow==2.3.1
-django-admin-bootstrapped==1.6.4
-django-tinymce==1.5.2
--e git://github.com/ciudadanointeligente/popit-django.git@posts_a_person_to_the_api#egg=popit-django
--e git://github.com/ciudadanointeligente/writeit-django.git#egg=writeit-django
-django-registration==1.0
-mimeparse==0.1.3
-django-tastypie==0.11.0
 django-pagination==1.0.5
-django-celery==3.1.10
-python-memcached==1.53
+celery==3.1.18
+django-celery==3.1.16
+-e git+https://github.com/ciudadanointeligente/writeit-django.git#egg=writeit-django
+-e git+https://github.com/ciudadanointeligente/popolorest@redisplaying_info_as_popit_does#egg=popolorest
+mock==1.3.0
+djangorestframework==3.2.3
+-e git+https://github.com/dokterbob/django-newsletter#egg=django_newsletter
+-e git+https://github.com/openpolis/django-popolo.git#egg=django_popolo-dev
+django-nose==1.4
+nose==1.3.0
+django-taggit==0.22
+slumber==0.6.0
+django-picklefield==0.3.1
+django-mathfilters==0.3.0
+mimeparse==0.1.3
+django-tastypie==0.10.0
+django-registration==1.0
+django-tinymce==1.5.1
+django-admin-bootstrapped==0.4.3
+pgmagick==0.6.5
+pillow
+sorl-thumbnail==12.2
+django-extensions==1.2.2
+PyYAML==3.10
+elasticsearch==1.6.0
+loremipsum==1.0.5
+django-mptt==0.8.7
+django-modeltranslation==0.12
+django-flatpages-i18n==0.5.0
+django-multiupload==0.5.2
+django-extra-views==0.9.0
+future==0.16.0

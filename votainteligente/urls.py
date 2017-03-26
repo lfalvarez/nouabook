@@ -2,12 +2,11 @@ from django.conf.urls import patterns, include, url
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 from django.conf.urls.i18n import i18n_patterns
+from django.conf import settings
 
 
 admin.autodiscover()
-
-
-
+admin.site.site_header = getattr(settings, 'ADMIN_HEADER', 'Vota Inteligente')
 
 urlpatterns = patterns('',
     # Examples:
@@ -29,4 +28,14 @@ urlpatterns += i18n_patterns('',
     url(r'^', include('elections.urls')),
     url(r'^page', include('flatpages_i18n.urls')),
     (r'^tinymce/', include('tinymce.urls')),
+    (r'^newsletter/', include('newsletter.urls')),
+    (r'^api/', include('popolorest.urls')),
 )
+
+
+from django.conf import settings
+if settings.THEME:
+    urlpatterns += patterns('',
+        ('^theme/', include('%s.urls' % (settings.THEME)))
+        )
+

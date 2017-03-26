@@ -1,9 +1,9 @@
 # encoding=utf-8
 
 from django.contrib import admin
-from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, CandidatePerson
-from flatpages_i18n.admin import FlatpageForm, FlatPageAdmin
-from flatpages_i18n.models import FlatPage_i18n
+from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer
+# from flatpages_i18n.admin import FlatpageForm, FlatPageAdmin
+# from flatpages_i18n.models import FlatPage_i18n
 ## OOPS this is a custom widget that works for initializing
 ## tinymce instances on stacked and tabular inlines
 ## for flatpages, just use the tinymce packaged one.
@@ -23,27 +23,27 @@ from south.models import MigrationHistory
 
 class ElectionAdmin(admin.ModelAdmin):
     search_fields = ['name', 'tags']
-	
+
 admin.site.register(Election, ElectionAdmin)
 
-class PageForm(FlatpageForm):
+# class PageForm(FlatpageForm):
 
-    class Meta:
-        model = FlatPage_i18n #FlatPage
-        widgets = {
-            #'content' : TinyMCE(),
-		    'content_fr' : TinyMCE(),
-            'content_ar' : TinyMCE(),
-        }
+#     class Meta:
+#         model = FlatPage_i18n #FlatPage
+#         widgets = {
+#             #'content' : TinyMCE(),
+# 		    'content_fr' : TinyMCE(),
+#             'content_ar' : TinyMCE(),
+#         }
 
-class PageAdmin(FlatPageAdmin):
-    """
-    Page Admin
-    """
-    form = PageForm
+# class PageAdmin(FlatPageAdmin):
+#     """
+#     Page Admin
+#     """
+#     form = PageForm
 
-admin.site.unregister(FlatPage_i18n)
-admin.site.register(FlatPage_i18n, PageAdmin)
+# admin.site.unregister(FlatPage_i18n)
+# admin.site.register(FlatPage_i18n, PageAdmin)
 
 class AnswerInline(admin.TabularInline):
     model = VotaInteligenteAnswer
@@ -55,13 +55,6 @@ class AnswerInline(admin.TabularInline):
         return format_html('<span style="font-size:13px">%d</span>' % (answer.total_upvotes,))
     number_votes_answer.short_description = 'number votes'
 
-class CandidatePersonExtraInfoAdmin(admin.ModelAdmin):
-    readonly_fields = ('person',)
-    fields = ('reachable','description', 'portrait_photo', 'custom_ribbon', 'canUsername', 'tags')
-    search_fields = ['person__name', 'person__api_instance__election__name']
-
-admin.site.register(CandidatePerson, CandidatePersonExtraInfoAdmin)
-
 
 class MensajesAdmin(admin.ModelAdmin):
     readonly_fields = ('created', 'number_votes',)
@@ -71,7 +64,7 @@ class MensajesAdmin(admin.ModelAdmin):
     inlines = [
     AnswerInline
     ]
-    
+
     def status_moderation(self):
         html_return=""
         if(self.moderated):
@@ -94,10 +87,10 @@ class MensajesAdmin(admin.ModelAdmin):
         return message.total_upvotes
     number_votes.short_description = 'Number of votes'
     number_votes.admin_order_field = 'total_upvotes'
-	
+
     list_display = ('author_name', 'author_email', 'subject', 'number_votes', 'created', 'moderated_at', status_moderation, pending_or_rejected)
     ordering = ('moderated','pending_status', 'rejected_status',)
-	
+
     actions = ['charger_stat_csv','accept_moderation',]
     actions_on_top = False
     actions_on_bottom = True
@@ -116,8 +109,8 @@ class MensajesAdmin(admin.ModelAdmin):
 
     def time_response(self, list_date):
         duree = list_date[1] - list_date[0]
-        return str(duree)    
-	
+        return str(duree)
+
     #function to generate CSV file
     def charger_stat_csv(self, request, queryset):
         #with open('rempli_stat.csv', 'wb') as csvfile:
@@ -143,7 +136,7 @@ class MensajesAdmin(admin.ModelAdmin):
                 answer_date = str(s_answer[0].created)
                 time_ms_answ = self.time_response([s.moderated_at, s_answer[0].created])
             writer.writerow([s.author_name, s.author_email, s.subject, s.content, s.author_ville, depute[0].name, created_date, str(s.total_upvotes), str_moderated ,str_fbshared, has_answer,\
-			answer_content, answer_date, time_ms_answ]) 
+			answer_content, answer_date, time_ms_answ])
         return response
     charger_stat_csv.short_description = u"Télécharger sous format CSV"
 
@@ -156,7 +149,7 @@ class VoteAdmin(admin.ModelAdmin):
     actions = ['charger_csv_vote',]
     actions_on_top = False
     actions_on_bottom = True
-	
+
     def type_object(self, levote):
         retour = ''
         if levote.content_object.__class__.__name__ == 'VotaInteligenteMessage':
@@ -166,7 +159,7 @@ class VoteAdmin(admin.ModelAdmin):
         return format_html(retour)
     type_object.short_description = 'content type name'
     type_object.admin_order_field = 'content_type'
-	
+
     def subject_object(self, levote):
         retour = ''
         if levote.content_object.__class__.__name__ == 'VotaInteligenteMessage':
@@ -177,7 +170,7 @@ class VoteAdmin(admin.ModelAdmin):
             retour = '<a href="%s" target="_blank">%s</a>' % (url_object, levote.content_object.message.subject, )
         return format_html(retour)
     subject_object.short_description = 'Subject'
-	
+
     def charger_csv_vote(self, request, queryset):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="stat_votes.csv"'

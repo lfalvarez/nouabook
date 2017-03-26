@@ -1,9 +1,8 @@
-from django.test import TestCase
-from django_nose import FastFixtureTestCase
-from django.core.management import call_command
+from django.test import TestCase, override_settings
 
+@override_settings(THEME=None)
 class VotaInteligenteTestCase(TestCase):
-	fixtures = ['example_data_mini.yaml']
-	
-	def setUp(self):
-		super(VotaInteligenteTestCase, self).setUp()
+    fixtures = ['mini_2.yaml']
+
+    def setUp(self):
+        super(VotaInteligenteTestCase, self).setUp()

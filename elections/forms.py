@@ -1,15 +1,14 @@
 # encoding=utf-8
 import datetime
-from candideitorg.forms import BackgroundChoiceField
+from candidator.forms import BackgroundChoiceField
 from django.forms.models import inlineformset_factory, modelformset_factory
 from haystack.forms import SearchForm
 from django import forms
 from django.forms import ModelForm, CheckboxSelectMultiple, Select, SelectMultiple, ModelMultipleChoiceField, ModelChoiceField, \
     FileInput
 from django.utils.translation import ugettext_lazy as _, get_language
-from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, Attachment, NouabookItem, \
-    CandidatePerson
-from candideitorg.models import BackgroundCandidate as Backcan, Background, Candidate, PersonalDataCandidate
+from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, Attachment, NouabookItem
+from candidator.models import BackgroundCandidate as Backcan, Background, Candidate, PersonalDataCandidate
 from taggit.models import Tag
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
@@ -160,6 +159,9 @@ class ElectionForm(SearchForm):
 
 class ElectionSearchByTagsForm(forms.Form):
     q = forms.CharField(required=False, label=_('Busca tu comuna'))
+
+    class Meta:
+        fields = ('q', )
 
     def get_search_result(self):
         cleaned_data = self.clean()
@@ -453,4 +455,3 @@ class UserCreationForm2(UserCreationForm):
 
     class Meta:
         fields = ("username", "email",)
-

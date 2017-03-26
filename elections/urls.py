@@ -11,11 +11,12 @@ from elections.models import VotaInteligenteMessage
 
 from django.conf import settings
 from django.views.decorators.cache import cache_page
-from elections.views import AnswerWebHook, ElectionQuestionView, ElectionPosezView, ProfilDetailView, MessageView, \
+from elections.views import ElectionQuestionView, ElectionPosezView, ProfilDetailView, MessageView, \
     Home3View, ProfilAccountDetailView, UpdateOrderView, ProfileQuestionView, \
     AnswerQuestionFormView, AnswerQuestionFormViewUpdate, StatusUpdateCreateView, \
     StatusUpdateUpdateView, StatusPosezView, StatusQuestionsView, CitizeTimelineView, ElectionPosezXView, \
     ElectionPosezXTagView
+from elections.preguntales_views import AnswerWebHook
 
 media_root = getattr(settings, 'MEDIA_ROOT', '/')
 
@@ -79,7 +80,7 @@ urlpatterns = patterns('',
                        # profil_account
                        url(r'^accounts/profile/?$',
                            cache_page(60 * settings.CACHE_MINUTES)(
-                               ProfilAccountDetailView.as_view()), name='account_profil_view'),                       
+                               ProfilAccountDetailView.as_view()), name='account_profil_view'),
                        # profil_account_questions
                        url(r'^accounts/profile/questions/(?P<success>\w+)?$',
                            cache_page(60 * settings.CACHE_MINUTES)(
