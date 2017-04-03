@@ -16,9 +16,9 @@ from elections.encoder_csv import UnicodeReader, UnicodeWriter
 from secretballot.models import Vote
 from django.core.urlresolvers import reverse
 from django.contrib.auth import admin as adminpy
-from elections.forms import UserCreationForm2
+# from elections.forms import UserCreationForm2
 from django.contrib.auth.models import User
-from south.models import MigrationHistory
+# from south.models import MigrationHistory
 
 
 class ElectionAdmin(admin.ModelAdmin):
@@ -194,19 +194,19 @@ class VoteAdmin(admin.ModelAdmin):
 admin.site.register(Vote, VoteAdmin)
 
 #test modificiation admin.py de django admin
-class UserInAdmin(adminpy.UserAdmin):
-    add_form = UserCreationForm2
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'email')}
-        ),
-    )
+# class UserInAdmin(adminpy.UserAdmin):
+#     add_form = UserCreationForm2
+#     add_fieldsets = (
+#         (None, {
+#             'classes': ('wide',),
+#             'fields': ('username', 'password1', 'password2', 'email')}
+#         ),
+#     )
 
-admin.site.unregister(User)
-admin.site.register(User, UserInAdmin)
+# admin.site.unregister(User)
+# admin.site.register(User, UserInAdmin)
 
-class MigrationsAdmin(admin.ModelAdmin):
-    list_display = ('migration',)
+# class MigrationsAdmin(admin.ModelAdmin):
+#     list_display = ('migration',)
 
-admin.site.register(MigrationHistory, MigrationsAdmin)
+# admin.site.register(MigrationHistory, MigrationsAdmin)

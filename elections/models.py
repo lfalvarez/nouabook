@@ -86,22 +86,6 @@ class NouabookItem(models.Model):
     category = models.ForeignKey(NouabookCategory)
 
 
-
-class CandidateFlatPage(FlatPage):
-    candidate = models.ForeignKey(Candidate, related_name='flatpages')
-
-    class Meta:
-        verbose_name = _(u"Página estáticas por candidato")
-        verbose_name_plural = _(u"Páginas estáticas por candidato")
-
-    def get_absolute_url(self):
-        return reverse('candidate_flatpage', kwargs={'election_slug': self.candidate.election.slug,
-                                                     'slug': self.candidate.id,
-                                                     'url': self.url
-                                                     }
-                       )
-
-
 class PersonalData(models.Model):
     candidate = models.ForeignKey('Candidate', related_name="personal_datas")
     label = models.CharField(max_length=512)

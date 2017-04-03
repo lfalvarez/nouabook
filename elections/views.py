@@ -1,11 +1,10 @@
 # encoding=utf-8
 import logging
-from candideitorg.forms import BackgroundAdminForm
 from django.core.mail.backends import console
 from django.http.request import QueryDict
 from django.template import context
 
-import simplejson as json
+import json
 from django.core.urlresolvers import reverse
 from django.views.generic import CreateView, DetailView, TemplateView
 from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, CandidatePerson, Attachment, \

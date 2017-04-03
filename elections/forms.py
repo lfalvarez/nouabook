@@ -1,14 +1,12 @@
 # encoding=utf-8
 import datetime
-from candidator.forms import BackgroundChoiceField
 from django.forms.models import inlineformset_factory, modelformset_factory
 from haystack.forms import SearchForm
 from django import forms
 from django.forms import ModelForm, CheckboxSelectMultiple, Select, SelectMultiple, ModelMultipleChoiceField, ModelChoiceField, \
     FileInput
 from django.utils.translation import ugettext_lazy as _, get_language
-from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, Attachment, NouabookItem
-from candidator.models import BackgroundCandidate as Backcan, Background, Candidate, PersonalDataCandidate
+from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, Attachment, NouabookItem, PersonalData, Candidate
 from taggit.models import Tag
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
@@ -26,7 +24,7 @@ class BackgroundCandidateForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BackgroundCandidateForm, self).__init__(*args, **kwargs)
-        self.fields['background'] = BackgroundChoice(queryset=Background.objects.all())
+        self.fields['background'] = BackgroundChoice(queryset=PersonalData.objects.all())
 
 from multiupload.fields import MultiFileField
 class VotaInteligenteAnswerForm(ModelForm):
@@ -41,6 +39,7 @@ class VotaInteligenteAnswerForm(ModelForm):
             'message': forms.HiddenInput(),
             'person': forms.HiddenInput()
         }
+        fields = ['person', 'message', 'content', 'files']
 
     files = MultiFileField(min_num=0, max_num=3, required=False, max_file_size=1024*1024*5, label= 'Fichiers joints:')
 
@@ -72,6 +71,7 @@ class TagForm(ModelForm):
                 queryset=Tag.objects.all())
     class Meta:
         model = Tag
+        fields = ['name',]
 
 class StatusUpdateCreateForm(ModelForm):
     class Meta:
@@ -83,6 +83,7 @@ class StatusUpdateCreateForm(ModelForm):
             'url': '',
             'urlVideo': '',
         }
+        fields = ['title', 'text', 'url', 'urlVideo']
 
         widgets = {
             'title': forms.TextInput(
@@ -124,11 +125,11 @@ class Status_QuestionForm(ModelForm):
         if lg == 'fr':
             self.fields['people'] = ModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('name'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('name'))
         else:
             self.fields['people'] = MyModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('id'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('id'))
 
     class Meta:
         model = VotaInteligenteMessage
@@ -176,7 +177,7 @@ class MessageForm(ModelForm):
         super(MessageForm, self).__init__(*args, **kwargs)
         self.instance.writeitinstance = self.writeitinstance
         self.instance.api_instance = self.writeitinstance.api_instance
-        self.fields['people'].queryset = self.election.popit_api_instance.person_set.filter(relation__reachable=True)
+        self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True)
 
     class Meta:
         model = VotaInteligenteMessage
@@ -209,7 +210,7 @@ class QuestionForm(ModelForm):
         super(QuestionForm, self).__init__(*args, **kwargs)
         self.instance.writeitinstance = self.writeitinstance
         self.instance.api_instance = self.writeitinstance.api_instance
-        self.fields['people'].queryset = self.election.popit_api_instance.person_set.filter(
+        self.fields['people'].queryset = self.election.candidates.filter(
             relation__reachable=True).order_by('name')
 
     class Meta:
@@ -239,7 +240,7 @@ class QuestionForm(ModelForm):
 
 class MyModelMultipleChoiceField(ModelMultipleChoiceField):
     def label_from_instance(self, obj):
-        candidate_pers = Backcan.objects.get(background_id=19, candidate=obj.relation.candidate)
+        candidate_pers = PersonalData.objects.get(background_id=19, candidate=obj)
         return candidate_pers.value
 #model mutliple choice field inheritance to change the label of option
 class MyModelTagChoiceField(ModelMultipleChoiceField):
@@ -254,7 +255,7 @@ class QuestionFormV2(ModelForm):
         super(QuestionFormV2, self).__init__(*args, **kwargs)
         self.instance.writeitinstance = self.writeitinstance
         self.instance.api_instance = self.writeitinstance.api_instance
-        # self.fields['people'].queryset = self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('name')
+        # self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True).order_by('name')
         lg = get_language()
         if lg == 'fr':
             self.fields['tags'] = ModelMultipleChoiceField(
@@ -262,14 +263,14 @@ class QuestionFormV2(ModelForm):
                 queryset=Tag.objects.all())
             self.fields['people'] = ModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('name'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('name'))
         else:
             self.fields['tags'] = MyModelTagChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select chosen-rtl', 'style': 'width:100%;', }),
                 queryset=Tag.objects.all())
             self.fields['people'] = MyModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select chosen-rtl', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('id'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('id'))
 
     class Meta:
         model = VotaInteligenteMessage
@@ -303,7 +304,7 @@ class QuestionXFormV2(ModelForm):
         super(QuestionXFormV2, self).__init__(*args, **kwargs)
         self.instance.writeitinstance = self.writeitinstance
         self.instance.api_instance = self.writeitinstance.api_instance
-        # self.fields['people'].queryset = self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('name')
+        # self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True).order_by('name')
         lg = get_language()
         if lg == 'fr':
             self.fields['tags'] = ModelMultipleChoiceField(
@@ -311,14 +312,14 @@ class QuestionXFormV2(ModelForm):
                 queryset=CandidatePerson.objects.get(id=candidateId).tags.all())
             self.fields['people'] = ModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('name'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('name'))
         else:
             self.fields['tags'] = MyModelTagChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select chosen-rtl', 'style': 'width:100%;', }),
                 queryset=CandidatePerson.objects.get(id=candidateId).tags.all())
             self.fields['people'] = MyModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select chosen-rtl', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('id'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('id'))
 
     class Meta:
         model = VotaInteligenteMessage
@@ -351,7 +352,7 @@ class QuestionXTagFormV2(ModelForm):
         super(QuestionXTagFormV2, self).__init__(*args, **kwargs)
         self.instance.writeitinstance = self.writeitinstance
         self.instance.api_instance = self.writeitinstance.api_instance
-        # self.fields['people'].queryset = self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('name')
+        # self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True).order_by('name')
         lg = get_language()
         if lg == 'fr':
             self.fields['tags'] = ModelChoiceField(
@@ -359,14 +360,14 @@ class QuestionXTagFormV2(ModelForm):
                 queryset=CandidatePerson.objects.get(id=candidateId).tags.all())
             self.fields['people'] = ModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('name'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('name'))
         else:
             self.fields['tags'] = MyModelTagChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select chosen-rtl', 'style': 'width:100%;', }),
                 queryset=CandidatePerson.objects.get(id=candidateId).tags.all())
             self.fields['people'] = MyModelMultipleChoiceField(
                 widget=forms.SelectMultiple(attrs={'class': 'chosen-select chosen-rtl', 'style': 'width:100%;', }),
-                queryset=self.election.popit_api_instance.person_set.filter(relation__reachable=True).order_by('id'))
+                queryset=self.election.candidates.filter(relation__reachable=True).order_by('id'))
 
     class Meta:
         model = VotaInteligenteMessage
@@ -398,14 +399,14 @@ class NewsletterForm(forms.Form):
 
 class DeputeSearchForm(forms.Form):
     def my_choices(id):
-        noms = Backcan.objects.filter(background_id=id).values('value').order_by('value').distinct()
+        noms = PersonalData.objects.filter(id=id).values('value').order_by('value').distinct()
         my_list = [('', 'Tous')]
         for n in noms:
             my_list.append((n['value'], n['value']))
         return my_list
 
     def my_choices_ar(self, id):
-        noms = Backcan.objects.filter(background_id=id).values('value').order_by('value').distinct()
+        noms = PersonalData.objects.filter(background_id=id).values('value').order_by('value').distinct()
         my_list = [('', 'جميع الاختيارات')]
         for n in noms:
             my_list.append((n['value'], n['value']))
@@ -419,7 +420,7 @@ class DeputeSearchForm(forms.Form):
         return my_list
 
     def my_choice_mp_ar(self):
-        mps = Backcan.objects.filter(background_id=19).values('value')
+        mps = PersonalData.objects.filter(background_id=19).values('value')
         my_list = [('', '')]
         for n in mps:
             my_list.append((n['value'], n['value']))
