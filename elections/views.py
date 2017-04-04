@@ -7,12 +7,10 @@ from django.template import context
 import json
 from django.core.urlresolvers import reverse
 from django.views.generic import CreateView, DetailView, TemplateView
-from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, CandidatePerson, Attachment, \
-    NouabookItem
+from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, Attachment, \
+    NouabookItem, Candidate
 from elections.forms import DeputeSearchForm, QuestionFormV2, BackgroundCandidateForm, VotaInteligenteAnswerForm, \
     StatusUpdateCreateForm, Status_QuestionForm, QuestionXFormV2, TagForm, QuestionXTagFormV2
-from candideitorg.models import Candidate, Background, BackgroundCandidate, PersonalDataCandidate, Link
-from popit.models import Person
 from taggit.models import Tag, TaggedItem
 from writeit.models import Message
 from django.views.generic.base import View
@@ -45,7 +43,7 @@ def login_page(request):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    logged_user = CandidatePerson.objects.get(canUsername=user.id)
+                    logged_user = Candidate.objects.get(canUsername=user.id)
                     request.session['logged_user_id'] = logged_user.id
                     # logged_user_name = logged_user.candidate
                     # return render(request, 'mp_profile.html', {'message': message, 'logged_user_name': logged_user_name})
@@ -269,7 +267,7 @@ class TagInline(InlineFormSetView):
     model = Tag
     #form_class = BackgroundCandidateForm
     def get_object(self):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         return Tag.objects.filter(object_id=logged_user.candidate.id)
 
 
@@ -281,11 +279,11 @@ class ProfilAccountDetailView(LoginRequiredMixin, UpdateWithInlinesView):
     inlines = [ItemInline, PersonalInline, LinkInline]
 
     def get_object(self):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         return logged_user.candidate
 
     def get_context_data(self, **kwargs):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         context = super(ProfilAccountDetailView, self).get_context_data(**kwargs)
         context['tags'] = Tag.objects.all()
         context['mp_tags'] = TaggedItem.objects.values_list('tag_id', flat=True).filter(object_id = self.object.relation.person.id, content_type_id = 33)
@@ -305,7 +303,7 @@ class UpdateOrderView(UpdateWithInlinesView):
     inlines = [ItemInline]
 
     def get_object(self):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         return logged_user.candidate
 
     def get_success_url(self):
@@ -317,7 +315,7 @@ class ProfileQuestionView(LoginRequiredMixin, DetailView):
     model = Candidate
 
     def get_object(self):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         return logged_user.candidate
 
     def get_queryset(self):
@@ -390,7 +388,7 @@ class ElectionPosezXView(CreateView):
 
     def get(self, request, *args, **kwargs):
         try:
-            c = CandidatePerson.objects.get(id=self.kwargs['pk'], reachable=True)
+            c = Candidate.objects.get(id=self.kwargs['pk'], reachable=True)
             return super(ElectionPosezXView, self).get(request, *args, **kwargs)
         except:
             return redirect('posez_view')
@@ -431,7 +429,7 @@ class ElectionPosezXTagView(CreateView):
 
     def get(self, request, *args, **kwargs):
         try:
-            c = CandidatePerson.objects.get(id=self.kwargs['pk'], reachable=True)
+            c = Candidate.objects.get(id=self.kwargs['pk'], reachable=True)
             tag = c.tags.get(id=self.kwargs['tag'])
             return super(ElectionPosezXTagView, self).get(request, *args, **kwargs)
         except:
@@ -485,7 +483,7 @@ class AnswerQuestionFormView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(AnswerQuestionFormView, self).get_context_data(**kwargs)
         context['message_to_answer'] = VotaInteligenteMessage.objects.get(pk=self.kwargs['pk'])
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         context['candidate'] = Candidate.objects.get(pk=logged_user.candidate.id)
         # self.initial = {'people': self.kwargs['pk']}
         context['redirection'] = '/accounts/profile/questions/message-' + self.kwargs['pk']
@@ -502,7 +500,7 @@ class AnswerQuestionFormView(LoginRequiredMixin, CreateView):
         return reverse('account_question_view', kwargs={'success': 'succes', })
 
     def get_initial(self, **kwargs):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         par_defaut = {'person': logged_user.candidate.id, 'message': self.kwargs['pk']}
         '''if self.kwargs['pk'] is not None:
             the_pk = self.kwargs['pk']
@@ -527,7 +525,7 @@ class AnswerQuestionFormViewUpdate(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(AnswerQuestionFormViewUpdate, self).get_context_data(**kwargs)
         context['message_to_answer'] = VotaInteligenteMessage.objects.get(pk=self.kwargs['pk'])
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         context['candidate'] = Candidate.objects.get(pk=logged_user.candidate.id)
         context['attachments'] = Attachment.objects.filter(messageId=self.kwargs['pk'])
         # self.initial = {'people': self.kwargs['pk']}
@@ -545,7 +543,7 @@ class AnswerQuestionFormViewUpdate(LoginRequiredMixin, UpdateView):
         return reverse('account_question_view', kwargs={'success': 'succes', })
 
     def get_initial(self, **kwargs):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         answer = VotaInteligenteAnswer.objects.get(message_id=self.kwargs['pk']).content
         par_defaut = {'person': logged_user.candidate.id, 'content': answer, 'message': self.kwargs['pk']}
         '''if self.kwargs['pk'] is not None:
@@ -629,7 +627,7 @@ class StatusUpdateCreateView(LoginRequiredMixin, CreateView):
     # success_url = 'profile/questions/'
 
     def get_context_data(self, **kwargs):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         context = super(StatusUpdateCreateView, self).get_context_data(**kwargs)
         context['all_status_update'] = NouabookItem.objects.filter(candidate=logged_user.candidate,
                                                                    category__name='status_update').order_by('-updated')
@@ -645,7 +643,7 @@ class StatusUpdateCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def get_initial(self, **kwargs):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         par_defaut = {'candidate': logged_user.candidate.id, 'category': 1}
         return par_defaut
 
@@ -668,7 +666,7 @@ class StatusUpdateUpdateView(LoginRequiredMixin, UpdateView):
         return post
 
     def get_context_data(self, **kwargs):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         context = super(StatusUpdateUpdateView, self).get_context_data(**kwargs)
         context['candidate'] = Candidate.objects.get(pk=logged_user.candidate.id)
         context['attachments'] = Attachment.objects.filter(messageId=self.kwargs['pk'], author_id=logged_user.candidate.id)
@@ -676,7 +674,7 @@ class StatusUpdateUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def get_initial(self, **kwargs):
-        logged_user = CandidatePerson.objects.get(canUsername=self.request.user.id)
+        logged_user = Candidate.objects.get(canUsername=self.request.user.id)
         post = NouabookItem.objects.get(id=self.kwargs['pk'])
         par_defaut = {'title': post.title, 'candidate': post.candidate, 'category': post.category, 'text': post.text,
                       'url': post.url}
@@ -700,7 +698,7 @@ class StatusPosezView(CreateView):
 
     def get(self, request, *args, **kwargs):
         try:
-            c = CandidatePerson.objects.get(id=self.kwargs['pk'], reachable=True)
+            c = Candidate.objects.get(id=self.kwargs['pk'], reachable=True)
             status=NouabookItem.objects.get(id=self.kwargs['status'])
             if c.candidate.id != status.candidate.id:
                 return redirect('posez_view')
@@ -993,7 +991,7 @@ def get_deputes_by_tag(request):
     deputes = []
     lg = translation.get_language()
     if tag_id:
-        deputes = CandidatePerson.objects.filter(reachable=True, tags__id=tag_id)
+        deputes = Candidate.objects.filter(reachable=True, tags__id=tag_id)
     else:
         data = [-1]
     if lg == 'fr':
@@ -1017,7 +1015,7 @@ def update_ranking(request):
     # Make the request
     """data = client.posts('nouabook.tumblr.com', limit=3, filter='html')
     return HttpResponse(json.dumps(data), content_type="application/json")"""
-    '''for candidate in CandidatePerson.objects.filter(reachable=True):
+    '''for candidate in Candidate.objects.filter(reachable=True):
         totalQuestionsAnswred = candidate.person.answers.count()
         if totalQuestionsAnswred < 5:
             candidate.ranking = 0

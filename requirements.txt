@@ -36,3 +36,5 @@ django-flatpages-i18n==0.5.0
 django-multiupload==0.5.2
 django-extra-views==0.9.0
 future==0.16.0
+python-memcached==1.58
+PyTumblr==0.0.6

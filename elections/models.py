@@ -46,8 +46,10 @@ class Candidate(Person, ExtraInfoMixin):
     elections = models.ManyToManyField('Election', related_name='candidates', null=True)
     force_has_answer = models.BooleanField(default=False,
                                            help_text=_('Marca esto si quieres que el candidato aparezca como que no ha respondido'))
-
+    canUsername = models.OneToOneField(User, null=True, blank=True)
+    reachable = models.BooleanField(default=False)
     default_extra_info = settings.DEFAULT_CANDIDATE_EXTRA_INFO
+
 
     @property
     def election(self):
