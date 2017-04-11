@@ -346,6 +346,8 @@ DEFAULT_ELECTION_EXTRA_INFO = {
 
 THEME = None
 
+NEW_ANSWER_ENDPOINT = 'Nouabook-endpoint'
+
 try:
     from local_settings import *
     INSTALLED_APPS += EXTRA_APPS

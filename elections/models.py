@@ -89,9 +89,8 @@ class NouabookItem(models.Model):
 
 
 class PersonalData(models.Model):
-    candidate = models.ForeignKey('Candidate', related_name="personal_datas")
-    label = models.CharField(max_length=512)
-    value = models.CharField(max_length=1024)
+    label = models.CharField(max_length=255)
+    election = models.ForeignKey('Election')
 
 
 @python_2_unicode_compatible
@@ -124,7 +123,7 @@ class QuestionCategory(Category):
 
 class Election(ExtraInfoMixin, models.Model):
     name = models.CharField(max_length=255)
-    slug = AutoSlugField(populate_from='name', unique=True)
+    slug = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     tags = TaggableManager(blank=True)
     searchable = models.BooleanField(default=True)
@@ -174,6 +173,7 @@ class VotaInteligenteMessage(Message):
     rejected_status = models.BooleanField(default=False)
     nouabookItem = models.ForeignKey(NouabookItem, blank=True, null=True, on_delete=models.SET_NULL)
     tags = TaggableManager(blank=True)
+    total_upvotes = models.IntegerField(default=0)
 
     objects = models.Manager()
     ordered = VotaInteligenteMessageManager()
@@ -232,6 +232,7 @@ class VotaInteligenteMessage(Message):
 class VotaInteligenteAnswer(models.Model):
     message = models.ForeignKey(VotaInteligenteMessage, related_name='answers')
     content = models.TextField()
+    total_upvotes = models.IntegerField(default=0)
     created = models.DateTimeField(editable=False, auto_now_add=True)
     person = models.ForeignKey(Candidate, related_name='answers')
 
@@ -261,3 +262,40 @@ class VotaInteligenteAnswer(models.Model):
 # enable secretballot to models using votes
 secretballot.enable_voting_on(VotaInteligenteMessage)
 secretballot.enable_voting_on(VotaInteligenteAnswer)
+
+
+class BackgroundCategory(models.Model):
+    election = models.ForeignKey(Election, null=True)
+    name = models.CharField(max_length=255)
+
+
+class Background(models.Model):
+    name = models.CharField(max_length=255)
+    background_category = models.ForeignKey(BackgroundCategory, null=True)
+
+
+class BackgroundCandidate(models.Model):
+    value = models.CharField(max_length=255, default='')
+    candidate = models.ForeignKey(Candidate, null=True)
+    background = models.ForeignKey(Background, null=True)
+
+class PersonalDataCandidate(models.Model):
+    value = models.TextField(null=True, blank=True)
+    candidate = models.ForeignKey(Candidate)
+    personaldata = models.ForeignKey(PersonalData)
+
+
+
+class Link(models.Model):
+    url = models.URLField(max_length=255)
+    name = models.CharField(max_length=255)
+    candidate = models.ForeignKey(Candidate)
+
+    @property
+    def icon_class(self):
+        if twitter_regexp.match(self.url):
+            return "icon-twitter-sign"
+        elif facebook_regexp.match(self.url):
+            return "icon-facebook-sign"
+        else:
+            return "icon-globe"

@@ -8,7 +8,7 @@ import json
 from django.core.urlresolvers import reverse
 from django.views.generic import CreateView, DetailView, TemplateView
 from elections.models import Election, VotaInteligenteMessage, VotaInteligenteAnswer, Attachment, \
-    NouabookItem, Candidate
+    NouabookItem, Candidate, Background, BackgroundCandidate, PersonalDataCandidate, Link
 from elections.forms import DeputeSearchForm, QuestionFormV2, BackgroundCandidateForm, VotaInteligenteAnswerForm, \
     StatusUpdateCreateForm, Status_QuestionForm, QuestionXFormV2, TagForm, QuestionXTagFormV2
 from taggit.models import Tag, TaggedItem
@@ -123,7 +123,7 @@ def the_candidatesv2(request):
     lelection = Election.objects.get(name='Marruecos2014')
     list_candidat = []
     lg = translation.get_language()
-    the_candidates = lelection.can_election.candidate_set.all()
+    the_candidates = lelection.candidates.all()
     if lg == 'fr':
         bc = Background.objects.filter(pk__in=[1, 2, 6])
         for OneCandidate in the_candidates:
@@ -155,7 +155,7 @@ def the_candidatesv2(request):
 
 def the_candidates(request):
     lelection = Election.objects.get(name='Marruecos2014')
-    the_candidates = lelection.can_election.candidate_set.all()
+    the_candidates = lelection.candidates.all()
     bc = Background.objects.filter(name__in=['Parti politique', 'Commission', 'Circonscription'])
     list_candidat = []
     for OneCandidate in the_candidates:
@@ -179,13 +179,12 @@ class Home3View(TemplateView):
         context['election'] = Election.objects.get(slug="marruecos2014")
         context['answerAttachments'] = Attachment.objects.filter(modelName='answer')
         context['status_updates'] = NouabookItem.objects.order_by('-created')[:6]
-        context['writeitmessages'] = VotaInteligenteMessage.objects.filter(
-            writeitinstance=context['election'].writeitinstance, moderated=True,
+        context['writeitmessages'] = VotaInteligenteMessage.objects.filter( moderated=True,
             answers__isnull=False).prefetch_related('answers').order_by('-answers__created')[:2]
         context['questions'] = VotaInteligenteMessage.objects.filter(
-            writeitinstance=context['election'].writeitinstance, answers__isnull=True, moderated=True).order_by(
+            answers__isnull=True, moderated=True).order_by(
             '-moderated_at')[:2]
-        context['top_vote'] = VotaInteligenteMessage.objects.filter(writeitinstance=context['election'].writeitinstance,
+        context['top_vote'] = VotaInteligenteMessage.objects.filter(
                                                                     answers__isnull=True, moderated=True).order_by(
             '-total_upvotes')[:2]
         lg = translation.get_language()
@@ -193,8 +192,8 @@ class Home3View(TemplateView):
             context['backgrounds'] = Background.objects.filter(pk__in=[1, 2, 6])
         else:
             context['backgrounds'] = Background.objects.filter(pk__in=[10, 11, 15, 19]).order_by('id')
-        context['canreachable'] = context['election'].can_election.candidate_set.filter(
-            relation__reachable=True).order_by('name')
+        context['canreachable'] = context['election'].candidates.filter(
+            reachable=True).order_by('name')
         return context
 
 
@@ -203,7 +202,7 @@ class ElectionDeputeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super(ElectionDeputeView, self).get_context_data(**kwargs)
         marueccos = Election.objects.get(slug="marruecos2014")
-        context['deputes'] = marueccos.can_election.candidate_set.all().order_by('photo')
+        context['deputes'] = marueccos.candidates.all().order_by('photo')
         context['slug_election'] = 'marruecos2014'
         context['background'] = Background.objects.filter(
             Q(name__icontains="Parti politique") | Q(name="Circonscription")).order_by('-name')
@@ -348,7 +347,7 @@ class ElectionQuestionView(TemplateView):
         context['tags'] = Tag.objects.all()
         context['attachments'] = Attachment.objects.filter(modelName='answer')
         context['writeitmessages'] = VotaInteligenteMessage.objects.filter(
-            writeitinstance=context['election'].writeitinstance, moderated=True,
+            moderated=True,
             answers__isnull=False).prefetch_related('answers').order_by('-answers__created')
         if self.kwargs['success'] is not None and self.kwargs['success'] == 'succes':
             context['message_done'] = self.kwargs['success']
@@ -862,7 +861,7 @@ def deputesview(request):
                 bg_id_list = [1, 2, 3, 6]
             else:
                 bg_id_list = [10, 11, 12, 15]
-            deputes = marueccos.can_election.candidate_set
+            deputes = marueccos.candidates
             if nom_mp:
                 if lg == 'fr':
                     deputes = deputes.filter(name__icontains=nom_mp)
@@ -888,18 +887,18 @@ def deputesview(request):
                 ok += 1
             if ok == 0:
                 deputes = deputes.all()
-            deputes = deputes.order_by('-relation__reachable', '-relation__ranking', 'name')
+            deputes = deputes.order_by('-reachable', '-relation__ranking', 'name')
         else:
             msg = 'recherche invalide'
             nom_error = form.errors['nom_depute']
         return render(request, 'elections/depute_html.html', locals())
     elif request.method == 'GET' and 's' not in request.GET and 'page' in request.GET:
-        deputes = marueccos.can_election.candidate_set.all().order_by('-relation__reachable', '-relation__ranking', 'name')
+        deputes = marueccos.candidates.all().order_by('-reachable', '-relation__ranking', 'name')
         return render(request, 'elections/depute_html.html', locals())
     else:
         form = DeputeSearchForm()
         # .values('value')
-        deputes = marueccos.can_election.candidate_set.all().order_by('-relation__reachable', '-relation__ranking', 'name')
+        deputes = marueccos.candidates.all().order_by('-reachable', '-relation__ranking', 'name')
     return render(request, 'elections/deputes.html', locals())
 
 
@@ -912,27 +911,27 @@ def ajax_question_view(request):
         if request.GET['genre'] == '#qa':
             attachments = Attachment.objects.filter(modelName='answer')
             if request.GET['tag'] == "#" or request.GET['tag'] == "" or request.GET['tag'] == "undefined":
-                the_qa = VotaInteligenteMessage.objects.filter(writeitinstance=election.writeitinstance, moderated=True,
+                the_qa = VotaInteligenteMessage.objects.filter(moderated=True,
                                                                answers__isnull=False).prefetch_related(
                     'answers').order_by('-answers__created')
             else:
-                the_qa = VotaInteligenteMessage.objects.filter(writeitinstance=election.writeitinstance, moderated=True,
+                the_qa = VotaInteligenteMessage.objects.filter(moderated=True,
                                                                answers__isnull=False, tags__id=request.GET['tag']).prefetch_related(
                     'answers').order_by('-answers__created')
 
         elif request.GET['genre'] == '#recent':
             if request.GET['tag'] == "#" or request.GET['tag'] == "" or request.GET['tag'] == "undefined":
-                recents = VotaInteligenteMessage.objects.filter(writeitinstance=election.writeitinstance,
+                recents = VotaInteligenteMessage.objects.filter(
                                                             answers__isnull=True, moderated=True).order_by('-moderated_at')
             else:
-                recents = VotaInteligenteMessage.objects.filter(writeitinstance=election.writeitinstance,
+                recents = VotaInteligenteMessage.objects.filter(
                                                             answers__isnull=True, moderated=True, tags__id=request.GET['tag']).order_by('-moderated_at')
         elif request.GET['genre'] == '#popular':
             if request.GET['tag'] == "#" or request.GET['tag'] == "" or request.GET['tag'] == "undefined":
-                populars = VotaInteligenteMessage.objects.filter(writeitinstance=election.writeitinstance,
+                populars = VotaInteligenteMessage.objects.filter(
                                                              answers__isnull=True, moderated=True).order_by('-total_upvotes')
             else:
-                populars = VotaInteligenteMessage.objects.filter(writeitinstance=election.writeitinstance,
+                populars = VotaInteligenteMessage.objects.filter(
                                                              answers__isnull=True, moderated=True, tags__id=request.GET['tag']).order_by('-total_upvotes')
         else:
             message = mess_content

@@ -117,10 +117,7 @@ class StatusUpdateCreateForm(ModelForm):
 class Status_QuestionForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election')
-        self.writeitinstance = self.election.writeitinstance
         super(Status_QuestionForm, self).__init__(*args, **kwargs)
-        self.instance.writeitinstance = self.writeitinstance
-        self.instance.api_instance = self.writeitinstance.api_instance
         lg = get_language()
         if lg == 'fr':
             self.fields['people'] = ModelMultipleChoiceField(
@@ -173,10 +170,7 @@ class ElectionSearchByTagsForm(forms.Form):
 class MessageForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election')
-        self.writeitinstance = self.election.writeitinstance
         super(MessageForm, self).__init__(*args, **kwargs)
-        self.instance.writeitinstance = self.writeitinstance
-        self.instance.api_instance = self.writeitinstance.api_instance
         self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True)
 
     class Meta:
@@ -206,10 +200,7 @@ class MessageForm(ModelForm):
 class QuestionForm(ModelForm):
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election')
-        self.writeitinstance = self.election.writeitinstance
         super(QuestionForm, self).__init__(*args, **kwargs)
-        self.instance.writeitinstance = self.writeitinstance
-        self.instance.api_instance = self.writeitinstance.api_instance
         self.fields['people'].queryset = self.election.candidates.filter(
             relation__reachable=True).order_by('name')
 
@@ -251,10 +242,7 @@ class MyModelTagChoiceField(ModelMultipleChoiceField):
 class QuestionFormV2(ModelForm):
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election')
-        self.writeitinstance = self.election.writeitinstance
         super(QuestionFormV2, self).__init__(*args, **kwargs)
-        self.instance.writeitinstance = self.writeitinstance
-        self.instance.api_instance = self.writeitinstance.api_instance
         # self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True).order_by('name')
         lg = get_language()
         if lg == 'fr':
@@ -300,10 +288,7 @@ class QuestionXFormV2(ModelForm):
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election')
         candidateId = kwargs.pop('candidateId')
-        self.writeitinstance = self.election.writeitinstance
         super(QuestionXFormV2, self).__init__(*args, **kwargs)
-        self.instance.writeitinstance = self.writeitinstance
-        self.instance.api_instance = self.writeitinstance.api_instance
         # self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True).order_by('name')
         lg = get_language()
         if lg == 'fr':
@@ -348,10 +333,7 @@ class QuestionXTagFormV2(ModelForm):
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election')
         candidateId = kwargs.pop('candidateId')
-        self.writeitinstance = self.election.writeitinstance
         super(QuestionXTagFormV2, self).__init__(*args, **kwargs)
-        self.instance.writeitinstance = self.writeitinstance
-        self.instance.api_instance = self.writeitinstance.api_instance
         # self.fields['people'].queryset = self.election.candidates.filter(relation__reachable=True).order_by('name')
         lg = get_language()
         if lg == 'fr':
@@ -399,10 +381,10 @@ class NewsletterForm(forms.Form):
 
 class DeputeSearchForm(forms.Form):
     def my_choices(id):
-        noms = PersonalData.objects.filter(id=id).values('value').order_by('value').distinct()
+        noms = PersonalData.objects.filter(id=id).values('label').order_by('label').distinct()
         my_list = [('', 'Tous')]
         for n in noms:
-            my_list.append((n['value'], n['value']))
+            my_list.append((n['label'], n['label']))
         return my_list
 
     def my_choices_ar(self, id):

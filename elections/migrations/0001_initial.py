@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import autoslug.fields
 import django.db.models.deletion
+from django.conf import settings
 import taggit.managers
 import picklefield.fields
 
@@ -13,6 +13,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('taggit', '0002_auto_20150616_2121'),
         ('popolo', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('candidator', '0005_auto_20170402_2003'),
         ('writeit', '__first__'),
     ]
@@ -29,11 +30,35 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Background',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=255)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='BackgroundCandidate',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('value', models.CharField(default=b'', max_length=255)),
+                ('background', models.ForeignKey(to='elections.Background', null=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='BackgroundCategory',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=255)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Candidate',
             fields=[
                 ('person_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='popolo.Person')),
                 ('extra_info', picklefield.fields.PickledObjectField(default={}, editable=False)),
                 ('force_has_answer', models.BooleanField(default=False, help_text='Marca esto si quieres que el candidato aparezca como que no ha respondido')),
+                ('reachable', models.BooleanField(default=False)),
+                ('canUsername', models.OneToOneField(null=True, blank=True, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'verbose_name': 'Candidato',
@@ -47,7 +72,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('extra_info', picklefield.fields.PickledObjectField(default={}, editable=False)),
                 ('name', models.CharField(max_length=255)),
-                ('slug', autoslug.fields.AutoSlugField(populate_from=b'name', unique=True, editable=False)),
+                ('slug', models.CharField(max_length=255)),
                 ('description', models.TextField(blank=True)),
                 ('searchable', models.BooleanField(default=True)),
                 ('highlighted', models.BooleanField(default=False)),
@@ -65,6 +90,15 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Mi Elecci\xf3n',
                 'verbose_name_plural': 'Mis Elecciones',
             },
+        ),
+        migrations.CreateModel(
+            name='Link',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('url', models.URLField(max_length=255)),
+                ('name', models.CharField(max_length=255)),
+                ('candidate', models.ForeignKey(to='elections.Candidate')),
+            ],
         ),
         migrations.CreateModel(
             name='NouabookCategory',
@@ -91,9 +125,17 @@ class Migration(migrations.Migration):
             name='PersonalData',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('label', models.CharField(max_length=512)),
-                ('value', models.CharField(max_length=1024)),
-                ('candidate', models.ForeignKey(related_name='personal_datas', to='elections.Candidate')),
+                ('label', models.CharField(max_length=255)),
+                ('election', models.ForeignKey(to='elections.Election')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='PersonalDataCandidate',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('value', models.TextField(null=True, blank=True)),
+                ('candidate', models.ForeignKey(to='elections.Candidate')),
+                ('personaldata', models.ForeignKey(to='elections.PersonalData')),
             ],
         ),
         migrations.CreateModel(
@@ -164,5 +206,20 @@ class Migration(migrations.Migration):
             model_name='candidate',
             name='elections',
             field=models.ManyToManyField(related_name='candidates', null=True, to='elections.Election'),
+        ),
+        migrations.AddField(
+            model_name='backgroundcategory',
+            name='election',
+            field=models.ForeignKey(to='elections.Election', null=True),
+        ),
+        migrations.AddField(
+            model_name='backgroundcandidate',
+            name='candidate',
+            field=models.ForeignKey(to='elections.Candidate', null=True),
+        ),
+        migrations.AddField(
+            model_name='background',
+            name='background_category',
+            field=models.ForeignKey(to='elections.BackgroundCategory', null=True),
         ),
     ]
