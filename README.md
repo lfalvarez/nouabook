@@ -28,7 +28,7 @@ Before the installation process is started a number of requirements is needed
 
 * Clone votainteligente somewhere in your system.
 
-`git clone https://github.com/ciudadanointeligente/votainteligente-portal-electoral.git`
+`git clone https://github.com/lfalvarez/nouabook.git`
 
 Enter the installation directory
 
