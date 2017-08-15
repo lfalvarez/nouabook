@@ -1,0 +1,253 @@
+{% extends "base-v3.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load thumbnail %}
+{% load votainteligente_extras %}
+{% load candideitorg_templetags %}
+{% load filename %}
+
+{% block title %}
+{% get_name_candidate candidate LANGUAGE_CODE %} | {% trans "Avez-vous une question à lui poser?" %}
+{% endblock title %}
+
+{% block fb_og %}        
+	<meta property="og:title" content="{{ 'title'|ogpdata }}">
+	<meta property="og:type" content="{{ 'type'|ogpdata }}">
+	<meta property="og:description" content="{% trans 'Communiquez en ligne avec vos député-es' %}">
+	<meta property="og:url" content="{{url_base}}{% url 'profil_view' candidate.slug %}">
+	{% if candidate.photo %}
+        <meta property="og:image" content="{{ candidate.photo }}" />
+        {% comment %}{% thumbnail candidate.photo "300x300" crop="center" as im %}
+            <meta property="og:image" content="{{ im.url }}" />
+        {% endthumbnail %}{% endcomment %}
+	{% else %} 
+	    <meta property="og:image" content="http://nouabook.ma/static/img/nouabook-logo.png">
+	{% endif %}	       
+{% endblock fb_og %}
+
+{% block pack_lang %}
+	{% include "elections/langage_html.html" with redirect_to="/profil/"|add:candidate.slug %}
+{% endblock pack_lang %}
+
+{% block content %}
+{% with reached=candidate.relation.reachable %}
+
+<main class="mp-profile">
+            <header>
+                <div class="container">
+                    {% if LANGUAGE_CODE == 'fr' %}
+                            <img src="/static/img/banners/banner-{{ banniere }}.png" alt="" class="party-banner"> 
+                    {% else %}
+                            <img src="/static/img/banners/banner-{{ banniere }}-ar.png" alt="" class="party-banner"> {# banniere #}
+                    {% endif %}
+                    <div class="header-content">
+                        <div class="response-meta">
+                            {% if candidate.photo %}
+															<img src="{{candidate.photo}}" alt="{{candidate.name}}">
+															{% comment %}{% thumbnail candidate.photo "300x300" crop="center" as im %}
+																	<img src="{{ im.url }}" alt="{{candidate.name}}" class="profile-picture medium">
+															 {% endthumbnail %}{% endcomment %}
+														{% else %}
+																<img src="/static/img/default-profile-picture.png" alt="{{candidate.name}}" alt="">
+														{% endif %}
+                            <h5 class="mobile-hidden">TAUX DE RÉPONSE</h5>
+                            <p class="mobile-only response-rate">réponse / question</p>
+                            <div class="score">
+                                <span class=" mobile-hidden"><i class="fa fa-comments" aria-hidden="true"></i></span>
+                                <div class="score-number">
+                                    <p class="numbers">
+                                        {{candidate.relation.ranking}} / 20
+                                    </p>
+																		<div class="stars">
+                {% for i in 'xxxxx' %}
+                    {% if forloop.counter <= candidate.relation.ranking %}
+                        <i class="fa fa-star"></i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+                                    <p class="label mobile-hidden">
+                                        RÉPONSES/QUESTIONS
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </header>
+
+            <section class="profile-select">
+                <div class="container">
+                    <div class="profile-content">
+                        <h1>{% get_name_candidate candidate LANGUAGE_CODE %}</h1>
+                        <div class="details-wrapper">
+                            <div class="details">
+                                <ul>
+                                    <li class="active"><a href="#" data-rel="#mp-name">{% get_name_candidate candidate LANGUAGE_CODE %} <i class="fa fa-angle-down mobile-only"></i></a></li>
+                                    <li><a href="#" data-rel="#electoral-info">{{ background_categories.0.name }} <i class="fa fa-angle-down  mobile-only"></i></a></li>
+                                    <li><a href="#" data-rel="#parliament">{{ background_categories.1.name }} <i class="fa fa-angle-down mobile-only"></i></a></li>
+                                    <li><a href="#" data-rel="#personal">{% trans "Informations personnelles" %} <i class="fa fa-angle-down mobile-only"></i></a></li>
+                                </ul>
+
+                                <div class="description-wrapper mobile-hidden">
+                                  <div class="description active" id="mp-name">
+                                      <p>{% trans "Bonjour, je m'appelle" %} {% get_name_candidate candidate LANGUAGE_CODE %} {% trans "et je suis un-e Député-e du " %} <strong>{% r_candidate_background candidate background_categories.0.background_set.all.4 %}</strong>, {% trans "siègeant dans la" %} <strong>{% r_candidate_background candidate background_categories.1.background_set.all.3 %}</strong>
+                                    {% if mp_tags %}
+                                    {% trans "et je réponds à vos questions sur" %}
+                                    {% for tag in mp_tags %}
+                                    {% trans tag.name %}{%if not forloop.last%}, {%endif%}
+                                    {% endfor %}.
+                                    {% endif %}</p>
+                                  </div>
+                                  <div class="description" id="electoral-info">
+																		{% for background in background_categories.0.background_set.all %}
+																				<p><strong>{{ background.name }} : </strong>{% r_candidate_background candidate background %}</p>
+																		{% endfor %}
+                                  </div>
+                                  <div class="description" id="parliament">
+                                    {% for background in background_categories.1.background_set.all %}
+																				<p><strong>{{ background.name }} : </strong>{% r_candidate_background candidate background %}</p>
+																		{% endfor %}
+                                  </div>
+                                  <div class="description" id="personal">
+                                    {% if LANGUAGE_CODE == 'fr' %}
+																			{% for personal_data in personal_datas reversed %}
+																					<p><strong>{{ personal_data.label }} : </strong>{% r_personal_data_candidate candidate personal_data %} </p>
+																			{% endfor %}
+																		{% else %}
+																				{% for personal_background in personal_data_ar|slice:"1:" reversed %}
+																						<p><strong>{{ personal_background.name }} : </strong>{% r_candidate_background candidate personal_background %}</p>
+																				{% endfor %}
+																		{% endif %}
+                                  </div>
+
+                                </div>
+                            </div>
+                            
+                        </div>
+												
+												{% if reached %}
+												{% if mp_tags %}
+                        <div class="tags-wrapper">
+                            <div class="title">
+                                <p>{% trans "Posez moi une question sur" %} :</p>
+                            </div>
+                            <div class="tags">
+                                <ul>
+																	{% for tag in mp_tags %}
+																		<li><a href="{% url 'posez_x_tag_view' candidate.id tag.id %}">{% trans tag.name %}</a></li>
+																	{% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+												{% else  %}
+                        <a href="{% url 'posez_x_view' candidate.id %}" class="button">{% trans "Posez moi une question" %}</a>
+												{% endif %}
+												{% endif %}
+                    </div>
+                </div>
+            </section>
+        
+
+            <div class="container" id="questions">
+                <div class="main-content vos-questions">
+                    <h1><a href="#qa" class="tab-nav active">{% trans "Vos questions" %}</a> / <a href="#status" class="tab-nav inactive">{% trans "Publications" %}</a></h1>
+                    <div class="questions-wrapper">
+                        <div class="questions">
+                            <div class="tabs">
+                                <div id="qa" class="tab">
+                                {% include "elections/profil_question_status-v3.html" with messagesprofil=writeitmessages %}
+                                </div>
+                                <div id="status" class="tab inactive">
+                                {% include "elections/profil_question_status-v3.html" %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% endblock content %}
+        </main>
+
+{% block otherjs %}
+<script>
+	jQuery(function($){
+        var tab_lien="#qa";
+
+        $('.tab-controls').on('click', 'li > a', function(evt) {
+            evt.preventDefault();
+            tab_lien=$(this).attr('href');
+            ajax_exec('?page=1',false);
+        });
+         
+        //pagination
+        var ajax_exec = function(queryStr, isLinkTab){
+            $(tab_lien).html('<div class="thread"><p class="notice">{% trans "Chargement en cours" %} . . .</p></div>');
+            if(queryStr.indexOf('depute=') == -1)
+            {queryStr = queryStr + '&depute={{ candidate.id }}';}
+            else if(queryStr.indexOf('&depute={{ candidate.id }}') == -1)
+            {queryStr = queryStr.replace(/depute=(\w+)$/,'depute={{ candidate.id }}');}
+
+            if(isLinkTab === false){
+                queryStr 
+                $.get('{% url "profil_question_ajax" %}'+queryStr+"&type="+encodeURIComponent(tab_lien), function(the_html){
+                        $(tab_lien).html(the_html);
+                    }).fail(function(){console.log('fail');});
+            }
+            else
+            {   
+                $.get('{% url "profil_question_ajax" %}'+queryStr, function(the_html){
+                        $(tab_lien).html(the_html);
+                    }).fail(function(){console.log('fail');});
+            }
+        };
+
+		//Binding event
+		$(document).on('click','.pagination a', function(evt){ 
+			evt.preventDefault(); scroller();	
+			restLien = $(this).attr('href');
+			if(restLien.indexOf('type=') != -1 ) ajax_exec(restLien, true)
+			else ajax_exec(restLien, false)
+		}); 
+			
+		$(document).on('click', 'a.voter',function(evt){ evt.preventDefault();
+			question_voter($(this),'{% url "votedirect" %}');						
+		});
+				
+		$(document).on('click', 'a.rvoter',function(evt){ evt.preventDefault();
+			answer_voter($(this),'{% url "votedirect" %}');						
+		});
+		
+        //enable some action after ajax: gallery, fb like
+        $(document).ajaxComplete(function( event, xhr, settings ) {
+            if(settings.url.indexOf('status') !=-1){
+                $(".gallery").owlCarousel({
+                    items: 1,
+                    itemElement: 'slide',
+                    responsiveClass:true,
+                    autoPlay: false,
+                    loop: true
+                });
+
+                FB.XFBML.parse();
+            }
+        });
+        
+
+		var scroller = function(){
+			$('html, body').animate({
+				scrollTop: $('#questions').offset().top
+			});
+		};
+		
+		//change twitter
+		var link_tweet = $('#profile .social .icn-twitter:first');
+		if(link_tweet.length){
+			href_tweet = link_tweet.attr('href');
+			if(/^@/.test(href_tweet))
+			link_tweet.attr('href', 'http://twitter.com/'+href_tweet)
+		}
+	});
+</script>
+{% endblock otherjs %}
