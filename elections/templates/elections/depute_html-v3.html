@@ -1,0 +1,75 @@
+{% load i18n %}
+{% load staticfiles %}
+{% load thumbnail %}
+{% load votainteligente_extras %}
+{% load pagination_tags %}
+
+<div>
+    {% comment %}{% for candidate in deputes %}
+	{% with reached=candidate.relation.reachable %}
+    {"id": {{ candidate.id }}, "name": "{% r_candidate_background candidate background_name %}", "photo": "{{ candidate.photo }}",
+				"parti": "{% r_candidate_background candidate background.0 %}",
+            "comission":"{% r_candidate_background candidate background.2 %}",
+            "ask-link": "http://nouabook.ma/ar/posez/{{ candidate.id }}"
+        },
+
+    {% endwith %}
+	{% endfor %}{% endcomment %}
+</div>
+
+{% if deputes %}
+{% autopaginate deputes 15 %}
+
+		<div class="responses-list">
+			{% for candidate in deputes %}
+			{% with reached=candidate.relation.reachable %}
+			<div class="response">
+				<div class="response-meta">
+					<img src="{{candidate.photo}}" alt="{{candidate.name}}">
+					<h5 class="mobile-hidden">TAUX DE RÉPONSE</h5>
+					<p class="mobile-only response-rate">réponse / question</p>
+					<div class="score {% if not reached %}inactive{% endif %}">
+						<span class=" mobile-hidden"><i class="fa fa-comments" aria-hidden="true"></i></span>
+						<div class="score-number">
+							<p class="numbers">
+								4/10
+							</p>
+							<p class="label mobile-hidden">
+								RÉPONSES/QUESTIONS
+							</p>
+						</div>
+					</div>
+				</div>
+				<div class="details">
+					{% if LANGUAGE_CODE == 'fr' %}
+						<p class="name"><a href="{% url 'profil_view' slug=candidate.slug %}">{{ candidate.name }}</a></p>
+						<p class="description">
+							{% for obj_background in background %}
+								{% r_candidate_background candidate obj_background %}<br/>
+							{% endfor %}
+						</p>
+					{% else %}
+						<p class="name"><a href="{% url 'profil_view' slug=candidate.slug %}">{% r_candidate_background candidate background_name %}</a></p>
+						<p class="description">
+							{% for obj_background in background|slice:":3" %}
+								{% r_candidate_background candidate obj_background %}<br/>
+							{% endfor %}
+						</p>
+					{% endif %}
+				</div>
+			</div>
+			
+			{% endwith %}
+			{% endfor %}
+		</div>		
+{% paginate %}
+{% else %}
+{% if msg %}
+<div class="message error"><span>
+{% trans "Veuillez remplir correctement les champs" %} {% if nom_error %}{{nom_error}}{% endif %}
+</span>
+</div>
+{% endif %}
+{% trans "Aucun résultat ne correspond à votre recherche" %}
+{% endif %}
+
